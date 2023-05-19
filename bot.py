@@ -3,13 +3,14 @@
 
 import asyncio
 import json
+import logging
 
 from pyrogram import Client, filters
 from pyrogram.handlers import MessageHandler
 
 
 async def ytdl(*ytdl_args):
-    print('yt-dlp', *ytdl_args, '...', end=' ')
+    logging.info('yt-dlp ' + ' '.join(ytdl_args))
     process = await asyncio.subprocess.create_subprocess_exec(
         'yt-dlp',
         *ytdl_args,
@@ -17,7 +18,6 @@ async def ytdl(*ytdl_args):
     )
     info = json.loads(await process.stdout.read())
     await process.wait()
-    print('done')
     return info
 
 
@@ -36,14 +36,15 @@ async def ytdl_get_video(link, format):
 
 
 async def download(client, message):
+    logging.info('%s %s', message.id, message.text)
     if len(message.command) < 2:
         return
 
     link = message.command[1]
 
-    print(f'[{link}] getting info')
+    logging.info('[%s] getting info', link)
     info = await ytdl_get_info(link)
-    print(f'[{link}] got info')
+    logging.info('[%s] got info', link)
 
     format = {'id': None, 'width': 0, 'height': 0}
     for cur_format in info['formats']:
@@ -55,20 +56,24 @@ async def download(client, message):
             format['width'] = cur_format['width']
             format['height'] = cur_format['height']
 
-    print(f'[{link}] selected format: {format}')
+    logging.info('[%s] selected format: %s', link, format)
     if format['id'] is None:
         return
 
-    print(f'[{link}] getting video')
+    logging.info('[%s] getting video', link)
     info = await ytdl_get_video(link, format['id'])
-    print(f'[{link}] got video \'{info["filename"]}\'')
+    logging.info('[%s] got video \'%s\'', link, info['filename'])
 
-    print(f'[{link}] sending video')
+    logging.info('[%s] sending video', link)
     await client.send_document(message.chat.id, info['filename'], force_document=True)
-    print(f'[{link}] sent video')
+    logging.info('[%s] sent video', link)
 
 
 def main():
+    logging.basicConfig(
+        format='%(asctime)s %(name)s %(levelname).1s %(message)s',
+        level=logging.INFO
+    )
     client = Client('client')
     client.add_handler(MessageHandler(download, filters.me & filters.command(['d'])))
     client.run()

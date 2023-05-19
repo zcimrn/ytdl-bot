@@ -70,7 +70,7 @@ async def download(client, message):
 
 def main():
     client = Client('client')
-    client.add_handler(MessageHandler(download, filters.command(['d']) | filters.me))
+    client.add_handler(MessageHandler(download, filters.me & filters.command(['d'])))
     client.run()
 
 

@@ -69,6 +69,10 @@ async def download(client, message):
     logging.info('[%s] sent video', link)
 
 
+async def healthcheck(client, message):
+    await client.delete_messages(message.chat.id, message.id)
+
+
 def main():
     logging.basicConfig(
         format='%(asctime)s %(name)s %(levelname).1s %(message)s',
@@ -76,6 +80,7 @@ def main():
     )
     client = Client('client')
     client.add_handler(MessageHandler(download, filters.me & filters.command(['d'])))
+    client.add_handler(MessageHandler(healthcheck, filters.me & filters.command(['healthcheck'])))
     client.run()
 
 

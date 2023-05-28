@@ -1,5 +1,7 @@
 *
 !.gitignore
 !readme.md
+!compose.yml
+!Dockerfile
 !requirements.txt
 !bot.py

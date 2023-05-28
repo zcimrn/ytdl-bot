@@ -1,0 +1,4 @@
+services:
+  ytdl-bot:
+    build: .
+    restart: always
